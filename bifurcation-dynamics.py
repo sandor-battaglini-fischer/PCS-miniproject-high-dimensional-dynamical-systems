@@ -4,9 +4,9 @@ from scipy.integrate import odeint
 from matplotlib.widgets import Slider
 
 # Parameters
-N = 100  
+N = 100
 tau = 1.0  
-t = np.linspace(0, 50, 1000)  
+t = np.linspace(0, 500, 1000)  
 
 def phi(x):
     return np.tanh(x)
@@ -15,7 +15,7 @@ def network_dynamics(r, t, J, tau):
     return (-r + np.dot(J, phi(r))) / tau
 
 def simulate_network(g):
-    J = np.random.normal(0, g/np.sqrt(N), size=(N, N))
+    J = np.random.normal(0, g*g/np.sqrt(N), size=(N, N))
     np.fill_diagonal(J, 0)  
     
     r0 = np.random.rand(N) * 0.1  
