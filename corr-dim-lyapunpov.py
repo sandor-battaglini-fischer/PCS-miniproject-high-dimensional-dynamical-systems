@@ -32,10 +32,11 @@ def calculate_lyapunov_spectrum(g, N, t_sim, dt):
     lyap /= t_sim
     return np.sort(lyap)[::-1]
 
-N = 1000
-t_sim = 100
+
+N = 2000  
+t_sim = 1000  
 dt = 0.1
-g_values = np.linspace(0.5, 2.0, 20)
+g_values = np.logspace(0, 3, 100)
 
 lyap_spectra = []
 entropy_rates = []
@@ -51,24 +52,42 @@ for g in g_values:
     k = np.argmax(np.cumsum(lyap) < 0)
     attractor_dims.append(k + np.sum(lyap[:k]) / np.abs(lyap[k]))
 
-plt.figure(figsize=(12, 4))
+plt.figure(figsize=(15, 10))
 
-plt.subplot(131)
-plt.plot(g_values, [spec[0] for spec in lyap_spectra])
+# Plot (a)
+plt.subplot(221)
+g_values_a = [1000, 100, 10, 1]
+colors = ['red', 'purple', 'blue', 'green']
+for g, color in zip(g_values_a, colors):
+    lyap = calculate_lyapunov_spectrum(g, N, t_sim, dt)
+    plt.plot(range(1, N+1), lyap, color=color, label=f'g = {g}')
+plt.xscale('log')
+plt.ylim(-0.5, 3)
+plt.xlabel('i')
+plt.ylabel('λ (1/τr)')
+plt.title('(a)')
+plt.legend()
+
+# Plot (b)
+plt.subplot(222)
+plt.semilogx(g_values, [spec[0] for spec in lyap_spectra], color='orange')
 plt.xlabel('g')
-plt.ylabel('Largest Lyapunov exponent')
+plt.ylabel('λmax (1/τr)')
 plt.title('(b)')
+plt.axhline(y=0, color='k', linestyle='--')
 
-plt.subplot(132)
-plt.plot(g_values, entropy_rates)
+# Plot (c)
+plt.subplot(223)
+plt.semilogx(g_values, entropy_rates, color='orange')
 plt.xlabel('g')
-plt.ylabel('Entropy rate H')
+plt.ylabel('H/(N/τr)')
 plt.title('(c)')
 
-plt.subplot(133)
-plt.plot(g_values, [d/N for d in attractor_dims])
+# Plot (d)
+plt.subplot(224)
+plt.semilogx(g_values, [d/N*100 for d in attractor_dims], color='orange')
 plt.xlabel('g')
-plt.ylabel('Relative attractor dim. D/N')
+plt.ylabel('D/N(%)')
 plt.title('(d)')
 
 plt.tight_layout()
