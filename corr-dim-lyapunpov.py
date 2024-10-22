@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+from scipy.linalg import expm 
 
 def phi(x):
     return np.tanh(x)
@@ -25,7 +26,7 @@ def calculate_lyapunov_spectrum(g, N, t_sim, dt):
     
     for i in range(1, len(t)):
         J_t = jacobian(trajectory[i])
-        Q_new = np.dot(J_t, Q)
+        Q_new = expm(J_t * dt) @ Q  
         Q, R = np.linalg.qr(Q_new)
         lyap += np.log(np.abs(np.diag(R)))
     
@@ -56,13 +57,12 @@ plt.figure(figsize=(15, 10))
 
 # Plot (a)
 plt.subplot(221)
-g_values_a = [1000, 100, 10, 1]
+g_values_a = [20, 10, 1]
 colors = ['red', 'purple', 'blue', 'green']
 for g, color in zip(g_values_a, colors):
     lyap = calculate_lyapunov_spectrum(g, N, t_sim, dt)
-    plt.plot(range(1, N+1), lyap, color=color, label=f'g = {g}')
-plt.xscale('log')
-plt.ylim(-0.5, 3)
+    plt.semilogx(range(1, N+1), lyap, color=color, label=f'g = {g}')
+plt.ylim(-5, 5)
 plt.xlabel('i')
 plt.ylabel('λ (1/τ)')
 plt.title('(a)')
