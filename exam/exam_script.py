@@ -306,39 +306,43 @@ def calculate_fractal_dimension(attractor, eps_range):
     coeffs = np.polyfit(np.log(1/eps_range), np.log(N), 1)
     return coeffs[0]
 
-def plot_cobweb(func, x0, n_iterations, r, x_range):
+def plot_cobweb(func, x0, n_iterations, *params, x_range=(0, 1)):
     """
-    Create a cobweb plot for a 1D discrete map.
-    
+    Plot the cobweb diagram for a given map.
+
     Parameters:
     func : callable
-        The function describing the map. Should take arguments (x, r).
+        The function describing the map. Should take arguments (x, *params).
     x0 : float
         Initial condition.
     n_iterations : int
         Number of iterations to plot.
-    r : float
-        Parameter value for the map.
-    x_range : tuple
-        The range of x values to plot.
+    *params : float
+        Parameters for the map function.
+    x_range : tuple, optional
+        Range of x values to plot.
+
+    Returns:
+    None
     """
     x = np.linspace(x_range[0], x_range[1], 1000)
-    y = func(x, r)
-    
-    plt.figure(figsize=(8, 8))
+    y = np.array([func(xi, *params) for xi in x])
+
+    plt.figure(figsize=(10, 10))
     plt.plot(x, y, 'k')
     plt.plot(x, x, 'k')
-    
-    x = x0
+
+    xi = x0
     for _ in range(n_iterations):
-        y = func(x, r)
-        plt.plot([x, x], [x, y], 'r', linewidth=0.5)
-        plt.plot([x, y], [y, y], 'r', linewidth=0.5)
-        x = y
-    
+        yi = func(xi, *params)
+        plt.plot([xi, xi], [xi, yi], 'r', linewidth=0.5)
+        plt.plot([xi, yi], [yi, yi], 'r', linewidth=0.5)
+        xi = yi
+
     plt.xlabel('x_n')
-    plt.ylabel('x_(n+1)')
-    plt.title('Cobweb Plot')
+    plt.ylabel('x_{n+1}')
+    plt.title('Cobweb Diagram')
+    plt.axis('equal')
     plt.show()
 
 def calculate_correlation_dimension(attractor, r_range, max_pairs=10000):
@@ -514,23 +518,35 @@ def plot_fnn(fnn_fractions):
     plt.title('False Nearest Neighbors Test')
     plt.show()
 
-def calculate_lyapunov_spectrum(func, x0, n_iterations, n_discard, dim, dt=0.01, params=None):
+
+def numerical_jacobian(func, x, t, params, eps=1e-8):
+    """Calculate the Jacobian matrix using finite differences."""
+    n = len(x)
+    J = np.zeros((n, n))
+    f0 = np.array(func(x, t, *params))
+    for i in range(n):
+        x_perturbed = x.copy()
+        x_perturbed[i] += eps
+        f1 = np.array(func(x_perturbed, t, *params))
+        J[:, i] = (f1 - f0) / eps
+    return J
+
+
+def calculate_lyapunov_spectrum(func, x0, t_final, dt, dim, params=()):
     """
     Calculate the Lyapunov spectrum for a continuous dynamical system.
     
     Parameters:
     func : callable
-        The function describing the system. Should take arguments (X, t, *params).
-    x0 : array
-        Initial conditions.
-    n_iterations : int
-        Number of iterations.
-    n_discard : int
-        Number of initial iterations to discard.
+        The function describing the dynamical system. Should take arguments (x, t, *params).
+    x0 : array-like
+        Initial condition.
+    t_final : float
+        Final time for integration.
+    dt : float
+        Time step for integration.
     dim : int
         Dimension of the system.
-    dt : float, optional
-        Time step for integration.
     params : tuple, optional
         Additional parameters for the function.
     
@@ -538,32 +554,32 @@ def calculate_lyapunov_spectrum(func, x0, n_iterations, n_discard, dim, dt=0.01,
     array
         The Lyapunov spectrum.
     """
-    if params is None:
-        params = ()
+    n_steps = int(t_final / dt)
+    t = np.linspace(0, t_final, n_steps)
     
     def system(X, t):
         x, Q = X[:dim], X[dim:].reshape(dim, dim)
         dx = func(x, t, *params)
-        dQ = np.dot(jac(x, t, *params), Q)
+        jac = numerical_jacobian(func, x, t, params)
+        dQ = np.dot(jac, Q)
         return np.concatenate([dx, dQ.flatten()])
     
-    def jac(x, t, *params):
-        return np.Jacobian(lambda x: func(x, t, *params))(x)
+    X0 = np.concatenate([x0, np.eye(dim).flatten()])
     
-    X = np.zeros(dim + dim**2)
-    X[:dim] = x0
-    X[dim:] = np.eye(dim).flatten()
+    # Use a more robust ODE solver
+    solution = odeint(system, X0, t, rtol=1e-8, atol=1e-8)
+    
+    Q = solution[:, dim:].reshape(-1, dim, dim)
+    R = np.zeros((n_steps, dim))
     
     lyap = np.zeros(dim)
-    for i in range(n_iterations):
-        X = odeint(system, X, [0, dt])[-1]
-        if i >= n_discard:
-            Q = X[dim:].reshape(dim, dim)
-            Q, R = np.linalg.qr(Q)
-            lyap += np.log(np.abs(np.diag(R)))
-            X[dim:] = Q.flatten()
+    for i in range(n_steps):
+        Q[i], R_step = np.linalg.qr(Q[i])
+        R[i] = np.abs(np.diagonal(R_step))
+        lyap += np.log(R[i] + 1e-16)  # Add small constant to avoid log(0)
     
-    return lyap / (dt * (n_iterations - n_discard))
+    lyap /= t_final
+    return lyap
 
 def plot_lyapunov_spectrum(lyap_spectrum):
     """
@@ -581,19 +597,20 @@ def plot_lyapunov_spectrum(lyap_spectrum):
     plt.title('Lyapunov Spectrum')
     plt.show()
 
-def calculate_kolmogorov_sinai_entropy(lyap_spectrum):
+def calculate_kolmogorov_sinai_entropy(lyapunov_spectrum):
     """
     Calculate the Kolmogorov-Sinai entropy from the Lyapunov spectrum.
     
     Parameters:
-    lyap_spectrum : array
+    lyapunov_spectrum : array-like
         The Lyapunov spectrum.
     
     Returns:
     float
         The Kolmogorov-Sinai entropy.
     """
-    return np.sum(lyap_spectrum[lyap_spectrum > 0])
+    positive_exponents = [exponent for exponent in lyapunov_spectrum if exponent > 0]
+    return sum(positive_exponents)
 
 def plot_bifurcation_2d(func, param1_range, param2_range, x0, n_iterations=1000, n_discard=100):
     """
@@ -850,6 +867,9 @@ def recurrence_quantification_analysis(recurrence_matrix):
     LAM = np.sum([l for l in vert_lengths if l >= 2]) / np.sum(vert_lengths)
     
     return {'RR': RR, 'DET': DET, 'L': L, 'LAM': LAM}
+
+
+
 
 
 

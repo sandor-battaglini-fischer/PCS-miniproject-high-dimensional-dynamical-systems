@@ -105,3 +105,46 @@ Recurrence Analysis
 
 
 
+"""
+Cobweb Plot
+"""
+# plot_cobweb(tent_map, 0.2, 50, 1.9, x_range=(0, 1))
+
+# plot_cobweb(logistic_map, 0.2, 50, 3.7, x_range=(0, 1))
+
+# plot_cobweb(henon_map, 0.2, 50, 1.4, 0.3, x_range=(-1.5, 1.5))
+
+
+
+"""
+Other stuff
+"""
+
+# # Information Dimension
+# x0 = [1, 1, 1]
+# t = np.linspace(0, 100, 10000)
+# solution = odeint(lorenz_system, x0, t)
+# time_series = solution[:, 0]
+# attractor = solution[:, :3]
+# r_range = np.logspace(-2, 1, 20)
+# info_dim = calculate_information_dimension(attractor, r_range)
+# print(f"Information Dimension: {info_dim}")
+
+# # Power Spectrum
+# plot_power_spectrum(time_series, 0.01)
+
+# # Correlation Sum
+# C = calculate_correlation_sum(attractor, r_range)
+# plot_correlation_sum(r_range, C)
+
+# # Generalized Dimensions
+# q_range = np.linspace(-5, 5, 21)
+# D_q = calculate_generalized_dimensions(attractor, q_range, r_range)
+# plot_generalized_dimensions(q_range, D_q)
+
+# # Sample Entropy
+# sample_ent = calculate_sample_entropy(time_series, m=2, r=0.2*np.std(time_series))
+# print(f"Sample Entropy: {sample_ent}")
+
+
+
