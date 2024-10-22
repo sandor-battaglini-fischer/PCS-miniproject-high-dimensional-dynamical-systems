@@ -5,6 +5,7 @@ import random
 from scipy.integrate import odeint
 from mpl_toolkits.mplot3d import Axes3D
 
+
 """
 Maps: Bifurcations and Lyapunov exponents
 """
@@ -66,6 +67,7 @@ Entropy and Dimension Calculation
 # print(f"Entropy: {entropy}")
 
 
+
 """
 Tent map entropy (Sequence Entropy)
 """
@@ -88,24 +90,6 @@ Tent map entropy (Sequence Entropy)
 
 
 """
-Recurrence Analysis
-"""
-
-# x0 = [1, 1, 1]
-# t = np.linspace(0, 100, 10000)
-
-# solution = odeint(lorenz_system, x0, t)
-
-
-# threshold = 2.0
-# recurrence_plot = plot_recurrence(solution[:, 0], threshold)
-# # rqa_measures = recurrence_quantification_analysis(recurrence_plot)
-# # print("RQA Measures:", rqa_measures)
-
-
-
-
-"""
 Cobweb Plot
 """
 # plot_cobweb(tent_map, 0.2, 50, 1.9, x_range=(0, 1))
@@ -113,6 +97,10 @@ Cobweb Plot
 # plot_cobweb(logistic_map, 0.2, 50, 3.7, x_range=(0, 1))
 
 # plot_cobweb(henon_map, 0.2, 50, 1.4, 0.3, x_range=(-1.5, 1.5))
+
+
+
+
 
 
 
@@ -147,4 +135,13 @@ Other stuff
 # print(f"Sample Entropy: {sample_ent}")
 
 
+# # Recurrence analysis
+# x0 = [1, 1, 1]
+# t = np.linspace(0, 100, 10000)
 
+# solution = odeint(lorenz_system, x0, t)
+
+# threshold = 2.0
+# recurrence_plot = plot_recurrence(solution[:, 0], threshold)
+# # rqa_measures = recurrence_quantification_analysis(recurrence_plot)
+# # print("RQA Measures:", rqa_measures)
