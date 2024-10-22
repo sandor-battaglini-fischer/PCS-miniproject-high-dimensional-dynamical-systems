@@ -33,8 +33,8 @@ def calculate_lyapunov_spectrum(g, N, t_sim, dt):
     return np.sort(lyap)[::-1]
 
 
-N = 2000  
-t_sim = 1000  
+N = 100  
+t_sim = 100  
 dt = 0.1
 g_values = np.logspace(0, 3, 100)
 
@@ -64,7 +64,7 @@ for g, color in zip(g_values_a, colors):
 plt.xscale('log')
 plt.ylim(-0.5, 3)
 plt.xlabel('i')
-plt.ylabel('λ (1/τr)')
+plt.ylabel('λ (1/τ)')
 plt.title('(a)')
 plt.legend()
 
@@ -72,7 +72,7 @@ plt.legend()
 plt.subplot(222)
 plt.semilogx(g_values, [spec[0] for spec in lyap_spectra], color='orange')
 plt.xlabel('g')
-plt.ylabel('λmax (1/τr)')
+plt.ylabel('λmax (1/τ)')
 plt.title('(b)')
 plt.axhline(y=0, color='k', linestyle='--')
 
@@ -80,7 +80,7 @@ plt.axhline(y=0, color='k', linestyle='--')
 plt.subplot(223)
 plt.semilogx(g_values, entropy_rates, color='orange')
 plt.xlabel('g')
-plt.ylabel('H/(N/τr)')
+plt.ylabel('H/(N/τ)')
 plt.title('(c)')
 
 # Plot (d)

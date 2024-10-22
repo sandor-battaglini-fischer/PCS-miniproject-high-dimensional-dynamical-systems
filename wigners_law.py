@@ -5,7 +5,7 @@ from scipy import stats
 def wigner_semicircle(x, R):
     return (2 / (np.pi * R**2)) * np.sqrt(R**2 - x**2)
 
-N = 1000  
+N = 10000  
 g_values = [0.9, 1, 1.2] 
 num_matrices = 100 
 
@@ -15,7 +15,7 @@ plt.figure(figsize=(12, 8))
 for g in g_values:
     all_eigenvalues = []
     for _ in range(num_matrices):
-        J = np.random.normal(0, g*g/np.sqrt(N), (N, N))
+        J = np.random.normal(0, (g*g)/np.sqrt(N), (N, N))
         J = (J + J.T) / 2  
         
         eigenvalues = np.linalg.eigvals(J)
