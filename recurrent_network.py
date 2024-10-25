@@ -20,19 +20,19 @@ def generate_lorenz_data(T, dt=0.01):
     sol = solve_ivp(lorenz, t_span, initial_state, t_eval=t_eval)
     return sol.t, sol.y.T
 
-# Parameters
-N = 100  # Reservoir size
-spectral_radius = 1.1
+# Parameters from the table
+N = 300  # Reservoir size
+spectral_radius = 1.4
 input_scaling = 0.1
-leak_rate = 0.3
+leak_rate = 0.2
+T_train = 2000
 
 # Generate training data
-T_train = 2000
 t_train, data_train = generate_lorenz_data(T_train)
 
 # Initialize reservoir
 np.random.seed(42)
-W_in = input_scaling * (np.random.rand(N, 3) * 2 - 1)
+W_in = input_scaling * (np.random.rand(N, 3) * 2 - 1)  # d = 6, system has 3 inputs (x, y, z)
 W = np.random.rand(N, N) - 0.5
 
 # Scale reservoir matrix to have a spectral radius < 1
@@ -53,7 +53,7 @@ reservoir_states = np.array(reservoir_states)
 W_out = la.lstsq(reservoir_states, data_train, cond=None)[0]
 
 # Short-term prediction
-T_test = 20
+T_test = 20  # Testing time
 t_test, data_test = generate_lorenz_data(T_test)
 predictions = []
 reservoir_state = np.copy(reservoir_states[-1])
@@ -65,14 +65,29 @@ for i in range(len(data_test)):
 
 predictions = np.array(predictions)
 
-# Visualization
-plt.figure(figsize=(15, 5))
-plt.plot(t_test, data_test[:, 0], 'b', label='True x(t)')
-plt.plot(t_test, predictions[:, 0], 'r', label='Predicted x(t)', linestyle='--')
-plt.title('Lorenz Attractor Prediction')
-plt.xlabel('Time')
+# Visualization with smaller figure and subtitle
+plt.figure(figsize=(8, 6))  # Smaller figure size
+
+plt.suptitle(f'Lorenz Attractor: $D_r={N}$, $T={T_train}$, $\\rho={spectral_radius}$, $\\beta={leak_rate}$, $\\sigma={input_scaling}$', fontsize=14)
+
+plt.subplot(3, 1, 1)
+plt.plot(t_test, data_test[:, 0], 'b', label='Actual')
+plt.plot(t_test, predictions[:, 0], 'r', label='Predicted')
 plt.ylabel('x(t)')
-plt.legend()
+plt.legend(loc='upper right')  # Move legend to top-right corner
+
+plt.subplot(3, 1, 2)
+plt.plot(t_test, data_test[:, 1], 'b')
+plt.plot(t_test, predictions[:, 1], 'r')
+plt.ylabel('y(t)')
+
+plt.subplot(3, 1, 3)
+plt.plot(t_test, data_test[:, 2], 'b')
+plt.plot(t_test, predictions[:, 2], 'r')
+plt.xlabel('Time')
+plt.ylabel('z(t)')
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to fit subtitle
 plt.show()
 
 
