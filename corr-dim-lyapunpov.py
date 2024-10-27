@@ -31,7 +31,6 @@ def calculate_lyapunov_spectrum(g, N, t_sim, dt):
     for i in range(1, len(t_eval)):
         J_t = jacobian(trajectory[i])
         
-        # Try to avoid large values in the matrix exponentiation
         try:
             Q_new = expm(J_t * dt) @ Q
         except OverflowError:

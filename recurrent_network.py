@@ -197,7 +197,7 @@ def lyapunov_calculation(t, predicted, window_size=1000):
 def main():
     # Parameters
     N = 300
-    spectral_radius = 1.397
+    spectral_radius = 1.4
     input_scaling = 0.1
     leak_rate = 0.2
     dt = 0.01
@@ -218,7 +218,7 @@ def main():
     
     # Plot results
     plot_comparison(t_pred, actual_data, predicted_data, 
-                   f'$D_r={N}$, $\\alpha={spectral_radius}$, $\\gamma={input_scaling}$, $\\delta={leak_rate}$')
+                   f'$D_r={N}$, $\\rho={spectral_radius}$, $\\sigma={input_scaling}$, $\\beta={leak_rate}$')
     # plot_return_map(actual_data, predicted_data)
     lyapunov_calculation(t_pred, predicted_data)
 
